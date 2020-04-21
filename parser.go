@@ -23,6 +23,17 @@ type Parser struct {
 // ConsumeLine consumes a line and returns a LogEvent if
 // the parser recognizes a completed event.
 func (p *Parser) ConsumeLine(line string) LogEvent {
+	if line == "" {
+		if p.inQuery {
+			// We're in a new section
+			event := parseEntry(p.lines)
+			p.lines = append(p.lines[:0], line)
+			p.inQuery = false
+			p.inHeader = true
+			return event
+		}
+		return nil
+	}
 	if strings.HasPrefix(line, "#") {
 		// Comment line
 		if p.inQuery {
@@ -153,7 +164,7 @@ func parseEntry(lines []string) LogEvent {
 				event["Timestamp"] = unixTimestampString
 				i, err := strconv.ParseInt(unixTimestampString, 10, 64)
 				if err == nil {
-					event["Timestamp"] = time.Unix(i, 0).UTC()
+					event["Timestamp"] = time.Unix(i, 0).Format("2006-01-02 15:04:05")
 				}
 			}
 			continue
