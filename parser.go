@@ -109,6 +109,9 @@ func parseEntry(lines []string) LogEvent {
 	var i int
 	var line string
 	for i, line = range lines {
+		if line == "" {
+			continue
+		}
 		if line[0] != '#' {
 			break
 		}
